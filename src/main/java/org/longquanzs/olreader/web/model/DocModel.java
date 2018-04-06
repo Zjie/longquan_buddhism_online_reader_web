@@ -34,12 +34,12 @@ public class DocModel {
 		this.id = id;
 		this.work = doc.get("work_name");
 		this.sno = doc.get("scripture_no");
-		this.name = doc.get("scripture_name").trim();
+		this.name = doc.get("scripture_name").trim().replace("　", "");
 		this.bookNo = doc.get("scripture_book_no");
 		this.dynasty = doc.get("scripture_dynasty");
 		this.translator = doc.get("scripture_translator");
 		this.rollNo = doc.get("roll_no");
-		this.rollName = doc.get("roll_name").trim();
+		this.rollName = doc.get("roll_name").trim().replace("　", "");
 		
 		this.rollText = doc.get("roll_text");
 		if (!needFullText)  {
@@ -49,8 +49,8 @@ public class DocModel {
 		if (!needFullPreface) {
 			this.preface = this.preface.substring(0, this.preface.length() > 50 ? 50 : this.preface.length());
 		}
-		this.rollText = this.rollText.trim();
-		this.preface = this.preface.trim();
+		this.rollText = this.rollText.trim().replace("　", "");
+		this.preface = this.preface.trim().replace("　", "");
 	}
 	public String getWork() {
 		return work;

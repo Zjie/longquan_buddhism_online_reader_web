@@ -33,24 +33,30 @@ public class SearchController {
 	@ResponseBody
 	public PageModel search(@RequestParam(name = "query", required = true) String query,
 												@RequestParam(name = "hits", required = false, defaultValue = "10") int hits,
-												@RequestParam(name = "page", required = false, defaultValue = "0") int page) throws IOException, ParseException {
+												@RequestParam(name = "page", required = false, defaultValue = "1") int page) throws IOException, ParseException {
 		String searchField = "roll_text";
 		String decodedQuery = URLDecoder.decode(query, "utf-8");
 		QueryParser qp = new QueryParser(searchField, new SmartChineseAnalyzer());
-		logger.debug("search for " + decodedQuery);
 		Query parsedQuery = qp.parse(decodedQuery);
-		TopDocs topDocs = indexSearcher.search(parsedQuery, hits);
+		TopDocs topDocs = indexSearcher.search(parsedQuery, hits * page);
 		List<DocModel> hitsDoc = new ArrayList<DocModel>();
 		PageModel result = new PageModel();
 		result.setResult(hitsDoc);
 		result.setTotalNum(topDocs.totalHits);
 		result.setPageSize(hits);
 		result.setCurPage(page);
-		result.setTotalPage((int)topDocs.totalHits/hits);
+		if ((int)topDocs.totalHits % hits == 0) {
+			result.setTotalPage((int)topDocs.totalHits/hits);
+		} else {
+			result.setTotalPage((int)topDocs.totalHits/hits + 1);
+		}
 		
-		for (ScoreDoc sd : topDocs.scoreDocs) {
-			Document d = indexSearcher.doc(sd.doc);
-			DocModel model = new DocModel(sd.doc, d, false, false);
+		int start = hits * (page - 1);
+		int end = hits * page > topDocs.totalHits ? (int)topDocs.totalHits : hits * page;
+		for (int i = start; i < end; i++) {
+			int docId = topDocs.scoreDocs[i].doc;
+			Document d = indexSearcher.doc(docId);
+			DocModel model = new DocModel(docId, d, false, false);
 			hitsDoc.add(model);
 		}
 		return result;
